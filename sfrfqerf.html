@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<canvas id="canvas" width="500" height="400" style="border: 1px solid red"></canvas>
+<script>
+    var canvas = document.getElementById("canvas");
+    var ctx = canvas.getContext("2d");
+
+    function Ball(x, y , radius, speed) {
+        var x = x;
+        var y = y;
+        var radius = radius;
+        var speed = speed;
+        this.ball = function () {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius,0,Math.PI*2);
+            ctx.fillStyle = "red";
+            ctx.fill();
+            ctx.closePath();
+        }
+    }
+    var ball = new Ball(250,20,20,2);
+    setInterval(function () {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ball.ball();
+        // x += 2;
+        ball.y += ball.speed;
+    }, 10)
+</script>
+</body>
+</html>

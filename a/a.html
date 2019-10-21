@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<style>
+    #wrapper{
+        width: 610px;
+        height: 610px;
+        margin: 80px auto;
+    }
+    #myCanvas {
+        border: 1px solid red;
+    }
+</style>
+<body>
+    <div id="wrapper">
+        <canvas id="myCanvas" width="600" height="400"></canvas>
+    </div>
+    <script>
+        var myCanvas = document.getElementById('myCanvas');
+        var ctx = myCanvas.getContext('2d');
+        var isGameOver = false;
+
+        // Khai báo lớp bóng
+        function Ball(x, y, dx, dy, radius, speed){
+            this.x = x;
+            this.y = y;
+            this.dx = dx;
+            this.dy = dy;
+            this.radius = radius;
+            this.speed = speed;
+
+            // Vẽ bóng
+            this.drawBall = function(){
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+                ctx.fillStyle = 'red';
+                ctx.fill();
+                ctx.closePath();
+            }
+
+            //Tọa độ thay đổi khi vẽ lại bóng
+            this.coordinatesBall = function(){
+                this.x += -this.dx;
+                this.y += - this.dy;
+            }
+
+            //Bóng va chạm với biên
+            this.ballCollision = function(){
+                if(this.x < 0 || this.x > myCanvas.width ){
+                    this.dx = -this.dx;
+                }
+                if(this.y < 0 || this.y > myCanvas.height){
+                    this.dy = -this.dy;
+                }
+
+                // Xử lý va chạm với đường bbieen dưới (GameOver)
+
+                this.checkBall = function(){
+                    if(this.y > myCanvas.height - this.radius){
+                        isGameOver = true;
+                    }
+                }
+
+            };
+         }
+
+        // Khởi tạo lớp ván 
+        function Plank(x, y, width, height, speed, isMovingRight, isMovingLeft){
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
+            this.speed = speed;
+            this.isMovingRight = false;
+            this.isMovingLeft = false;
+
+            // Vẽ tám ván
+            this.drawPlank = function(){
+                ctx.beginPath();
+                ctx.rect(this.x, this.y, this.width, this.height);
+                ctx.fillStyle = 'red';
+                ctx.fill();
+                ctx.closePath();
+            }
+
+            //Xử lya va chạm của bong với tấm ván
+            this.collisionPlank = function() {
+                if (ball.x + ball.radius >= this.x && ball.x + ball.radius <= this.x + this.width &&
+                    ball.y + ball.radius >= myCanvas.height - this.height){
+                    ball.dy = -ball.dy;
+                }
+            }
+
+            // Kiểm tra hướng di chuyển của thanh ván đang là trái hay phải
+            this.checkMovingPlank = function(){
+                if(this.isMovingLeft){
+                    this.x -= this.speed;
+                }else if(this.isMovingRight){
+                    this.x += this.speed;
+                }
+            }
+
+            // Xử lý di chuyển của ván với biên ( ván ko vuowtj quá biên);
+            this.movingEdgePlank = function(){
+                if(this.x < 0){
+                    this.x = 0;
+                }else if(this.x > myCanvas.width - this.width){
+                    this.x = myCanvas.width - this.width;
+                }
+            }
+
+
+        };
+
+         //Xử lý sự kiện bàn phím của plank
+        document.addEventListener("keyup", function (event) {
+            if (event.keyCode == 37){
+                plank.isMovingLeft = false;
+            }else if (event.keyCode == 39){
+                plank.isMovingRight = false;
+            }
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.keyCode == 37){
+                plank.isMovingLeft = true;
+            }else if (event.keyCode == 39){
+                plank.isMovingRight= true;
+            }
+        });
+
+
+         // Vẽ các viên gạch       
+        function Brick(x, y, margin, width, height, totalRow, totalCol, brickList){
+            this.x = x;
+            this.y = y;
+            this.margin = margin;
+            this.width = width;
+            this.height = height;
+            this.totalRow = totalRow;
+            this.totalCol = totalCol;
+            this.brickList = [];
+
+            // this.writeBrick = function(){
+            //     for(let i = 0; i<totalRow ; i++){
+            //         for(let j = 0; j<totalCol ; j++){
+            //             this.brickList.push({
+            //             x:this.x + j * (this.width + this.margin),
+            //             y:this.y + i * (this.height + this.margin) ,
+            //             isBroken : false
+            //             });
+            //         }
+            //     }
+            // }
+
+            //  this.drawBricks = function() {
+            //     this.brickList.forEach(function(b){
+            //     if(!b.isBroken){
+            //         ctx.beginPath();
+            //         ctx.rect(b.x,b.y,this.width,this.height);
+            //         ctx.fillStyle = "yellow";
+            //         ctx.fill();
+            //         ctx.closePath();
+            //     }
+
+            //     });
+            // }
+        }
+
+
+        // Khai báo các đối tượng
+        var ball = new Ball(200, 200,5,2,20,10);
+        var plank = new Plank(0, myCanvas.height-20, 100,20,10, []);
+        var brick = new Brick(25,25,25, 70, 15, 4, 6);
+
+       function moveCoordinatesBall(){
+           if(!isGameOver){
+            ctx.clearRect(0,0,myCanvas.width,myCanvas.height);
+            plank.drawPlank();
+            plank.collisionPlank();
+            plank.checkMovingPlank();
+            plank.movingEdgePlank();
+            ball.drawBall();
+            ball.ballCollision();
+            ball.coordinatesBall();
+            ball.checkBall();
+            requestAnimationFrame(moveCoordinatesBall);
+           }else{
+               alert('Bạn thua cuộc');
+           }
+       }
+       moveCoordinatesBall();
+       brick.drawBricks();
+            brick.writeBrick();
+
+    </script>
+</body>
+</html>
